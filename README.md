@@ -1,48 +1,84 @@
-# krause-net
+# Krause Net
 
-This template should help get you started developing with Vue 3 in Vite.
+## 📝 Description
 
-## Recommended IDE Setup
+A web application built with Vue.js and Supabase.
+The system allows users to register and log in.
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+## 📢 Project Status
 
-## Recommended Browser Setup
+In development — may contain errors and frequent changes.
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd) 
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+## ⚒️ Technologies
 
-## Type Support for `.vue` Imports in TS
+* Vite + Vue 3 + TypeScript
+* Supabase (Auth & Database)
+* Tailwind CSS
+* Pinia (state management)
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+## 📦 Setup
 
-## Customize configuration
+### 📋 Prerequisites
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+* Node.js (latest recommended)
+* npm (latest recommended)
+* Git
 
-## Project Setup
+### ⚙️ Setup Instructions
 
-```sh
+#### Clone the repository
+
+```bash
+git clone https://github.com/ignaciosarawanski/krause-net.git
+cd krause-net
+```
+
+#### Install dependencies
+
+```bash
 npm install
 ```
 
-### Compile and Hot-Reload for Development
+#### Configure Supabase
 
-```sh
+1. Create a `.env` file based on `.env.example`.
+2. Add your Supabase URL and API key.
+
+---
+
+## 🚀 Use
+
+### Start the project
+
+```bash
 npm run dev
 ```
 
-### Type-Check, Compile and Minify for Production
+---
 
-```sh
-npm run build
+## 📄 License
+
+This project is licensed under the MIT License — see the LICENSE file for details.
+
+---
+
+## 🗂️ Project Structure
+
+```
+krause-net/
+├─ src/
+│  ├─ components/
+│  ├─ views/
+│  ├─ stores/    # Pinia stores
+│  └─ lib/       # Supabase client config
+├─ public/
+├─ .gitignore
+├─ package.json
+└─ README.md
 ```
 
-### Lint with [ESLint](https://eslint.org/)
+---
 
-```sh
-npm run lint
-```
+## ⚡ Notes
+
+* The project is still in active development; some features may be incomplete or unstable.
