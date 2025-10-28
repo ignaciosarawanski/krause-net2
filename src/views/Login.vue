@@ -32,7 +32,7 @@
 
       <p class="text-sm text-gray-600">
         ¿Olvidaste tu contraseña?
-        <router-link to="/forgot-password" class="text-blue-500 hover:underline">Aquí</router-link>.
+        <router-link to="/forgotpassword" class="text-blue-500 hover:underline">Aquí</router-link>.
       </p>
 
       <FormButton type="submit" color="red" class="w-full"> Iniciar Sesión </FormButton>
@@ -55,15 +55,11 @@ type FieldName = 'email' | 'password'
 
 const fields: FieldName[] = ['email', 'password']
 
-// Inicializamos el composable
 const { values, errors, validateAll, clearError } = useAuthForm(fields)
 
-// Función de envío
 const handleLogin = () => {
-  // Validar todos los campos
   if (!validateAll()) return
 
-  // Aquí iría la lógica de login con Supabase
   console.log('Login válido:', {
     email: values.email.value,
     password: values.password.value,
