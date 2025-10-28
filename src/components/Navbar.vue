@@ -1,9 +1,9 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <nav
-    class="sticky top-0 z-50 bg-gray-200 text-black text-lg p-4 shadow-md font-medium h-20 flex items-center"
+    class="sticky top-0 z-50 bg-gray-200 text-black text-lg p-4 shadow-md font-medium min-h-20 flex items-center sm:flex-row"
   >
-    <div class="container mx-auto flex justify-between items-center">
+    <div class="container mx-auto flex justify-between items-center flex-col sm:flex-row">
       <!-- Logo con tamaño configurable -->
       <Logo :size="48" />
 

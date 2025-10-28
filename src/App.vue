@@ -1,6 +1,5 @@
 <template>
   <div id="app">
-    <!-- Mostrar Navbar solo en rutas permitidas -->
     <Navbar v-if="showNavbar" />
     <router-view />
   </div>
