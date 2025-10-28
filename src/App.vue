@@ -1,11 +1,20 @@
-<script setup lang="ts"></script>
-
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+  <div id="app">
+    <!-- Mostrar Navbar solo en rutas permitidas -->
+    <Navbar v-if="showNavbar" />
+    <router-view />
+  </div>
 </template>
 
-<style scoped></style>
+<script setup lang="ts">
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
+import Navbar from '@/components/Navbar.vue'
+
+const route = useRoute()
+
+// Rutas donde el Navbar sí se muestra
+const visiblePaths = ['/', '/dashboard']
+
+const showNavbar = computed(() => visiblePaths.includes(route.path))
+</script>
