@@ -3,9 +3,9 @@
   <div class="flex flex-col items-center justify-center min-h-screen bg-gray-100 px-4">
     <Logo :size="128" />
 
-    <form
-      @submit.prevent="handleLogin"
-      novalidate
+    <!-- Contenido según estado -->
+    <div
+      v-if="!isLoggedIn"
       class="bg-white p-8 rounded-lg shadow-md w-full max-w-sm flex flex-col gap-4"
     >
       <h2 class="text-2xl font-bold mb-2 text-center">Iniciar Sesión</h2>
@@ -15,8 +15,8 @@
         label="Email"
         id="email"
         type="text"
-        :hasError="!!errors.email.value"
-        :errorMessage="errors.email.value"
+        :has-error="!!errors.email.value"
+        :error-message="errors.email.value"
         @input="clearError('email')"
       />
 
@@ -25,8 +25,8 @@
         label="Contraseña"
         id="password"
         type="password"
-        :hasError="!!errors.password.value"
-        :errorMessage="errors.password.value"
+        :has-error="!!errors.password.value"
+        :error-message="errors.password.value"
         @input="clearError('password')"
       />
 
@@ -35,34 +35,87 @@
         <router-link to="/forgotpassword" class="text-blue-500 hover:underline">Aquí</router-link>.
       </p>
 
-      <FormButton type="submit" color="red" class="w-full"> Iniciar Sesión </FormButton>
+      <FormButton type="submit" color="red" class="w-full" @click="handleLogin">
+        Iniciar Sesión
+      </FormButton>
 
       <p class="text-sm text-gray-600 text-center">
         ¿No tienes una cuenta?
         <router-link to="/signup" class="text-blue-500 hover:underline">Registrate</router-link>.
       </p>
-    </form>
+    </div>
+
+    <!-- Mensaje de éxito -->
+    <div
+      v-else
+      class="bg-white p-8 rounded-lg shadow-md w-full max-w-sm flex flex-col gap-6 items-center text-center"
+    >
+      <h2 class="text-2xl font-bold mb-2">¡Login Exitoso!</h2>
+      <p class="text-gray-700 mb-4">Redireccionando a tu cuenta...</p>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
+import { supabase } from '@/lib/supabase'
 import Logo from '@/components/Logo.vue'
 import FormInput from '@/components/FormInput.vue'
 import FormButton from '@/components/FormButton.vue'
 import { useAuthForm } from '@/composables/useAuthForm'
 
 type FieldName = 'email' | 'password'
-
 const fields: FieldName[] = ['email', 'password']
 
 const { values, errors, validateAll, clearError } = useAuthForm(fields)
 
-const handleLogin = () => {
+const isLoggedIn = ref(false)
+const router = useRouter()
+
+// Redirigir automáticamente después del login exitoso
+watch(isLoggedIn, (newVal) => {
+  if (newVal) {
+    setTimeout(() => {
+      router.push('/dashboard') // Cambiar al path que uses para la página principal
+    }, 2000) // 2 segundos
+  }
+})
+
+const handleLogin = async () => {
   if (!validateAll()) return
 
-  console.log('Login válido:', {
-    email: values.email.value,
-    password: values.password.value,
-  })
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: values.email.value,
+      password: values.password.value,
+    })
+
+    if (error) {
+      // Mapear errores a los campos si es posible
+      if (error.message.includes('Invalid login credentials')) {
+        errors.email.value = 'Email o contraseña incorrecta'
+        errors.password.value = 'Email o contraseña incorrecta'
+      } else {
+        alert(error.message)
+      }
+      return
+    }
+
+    if (!data.session) throw new Error('No se pudo iniciar sesión')
+
+    // Login exitoso
+    isLoggedIn.value = true
+  } catch (err: unknown) {
+    console.error('Error al iniciar sesión:', err)
+
+    if (err instanceof Error) {
+      alert(err.message)
+    } else if (typeof err === 'string') {
+      alert(err)
+    } else {
+      alert('Ocurrió un error inesperado')
+    }
+  }
 }
 </script>

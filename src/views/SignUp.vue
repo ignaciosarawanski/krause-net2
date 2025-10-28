@@ -158,9 +158,16 @@ const handleRegister = async () => {
 
     // Mostrar mensaje de éxito
     isRegistered.value = true
-  } catch (err) {
+  } catch (err: unknown) {
     console.error('Error inesperado:', err)
-    alert('Ocurrió un error inesperado, intenta nuevamente.')
+
+    if (err instanceof Error) {
+      alert(err.message)
+    } else if (typeof err === 'string') {
+      alert(err)
+    } else {
+      alert('Ocurrió un error inesperado, intenta nuevamente.')
+    }
   }
 }
 </script>
