@@ -30,11 +30,6 @@
         @input="clearError('password')"
       />
 
-      <p class="text-sm text-gray-600">
-        ¿Olvidaste tu contraseña?
-        <router-link to="/forgotpassword" class="text-blue-500 hover:underline">Aquí</router-link>.
-      </p>
-
       <FormButton type="submit" color="red" class="w-full" @click="handleLogin">
         Iniciar Sesión
       </FormButton>
@@ -57,30 +52,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
-import { supabase } from '@/lib/supabase'
+// Components
 import Logo from '@/components/Logo.vue'
 import FormInput from '@/components/FormInput.vue'
 import FormButton from '@/components/FormButton.vue'
+// Utilities
+import { useRouter } from 'vue-router'
+import { supabase } from '@/lib/supabase'
 import { useAuthForm } from '@/composables/useAuthForm'
+import { ref } from 'vue'
 
 type FieldName = 'email' | 'password'
 const fields: FieldName[] = ['email', 'password']
 
 const { values, errors, validateAll, clearError } = useAuthForm(fields)
 
-const isLoggedIn = ref(false)
 const router = useRouter()
-
-// Redirigir automáticamente después del login exitoso
-watch(isLoggedIn, (newVal) => {
-  if (newVal) {
-    setTimeout(() => {
-      router.push('/dashboard') // Cambiar al path que uses para la página principal
-    }, 2000) // 2 segundos
-  }
-})
+const isLoggedIn = ref(false)
 
 const handleLogin = async () => {
   if (!validateAll()) return
@@ -92,7 +80,6 @@ const handleLogin = async () => {
     })
 
     if (error) {
-      // Mapear errores a los campos si es posible
       if (error.message.includes('Invalid login credentials')) {
         errors.email.value = 'Email o contraseña incorrecta'
         errors.password.value = 'Email o contraseña incorrecta'
@@ -101,11 +88,13 @@ const handleLogin = async () => {
       }
       return
     }
-
     if (!data.session) throw new Error('No se pudo iniciar sesión')
 
-    // Login exitoso
     isLoggedIn.value = true
+    setTimeout(() => {
+      router.push('/dashboard')
+    }, 3000)
+    //
   } catch (err: unknown) {
     console.error('Error al iniciar sesión:', err)
 

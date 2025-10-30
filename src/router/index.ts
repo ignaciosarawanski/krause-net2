@@ -2,7 +2,6 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Home from '@/views/Home.vue'
 import Login from '@/views/Login.vue'
 import SignUp from '@/views/SignUp.vue'
-import ForgotPassword from '@/views/ForgotPassword.vue'
 import NotFound from '@/views/NotFound.vue'
 import { useUserStore } from '@/stores/user'
 
@@ -10,7 +9,6 @@ const routes = [
   { path: '/', name: 'Home', component: Home },
   { path: '/login', name: 'Login', component: Login },
   { path: '/signup', name: 'SignUp', component: SignUp },
-  { path: '/forgotpassword', name: 'ForgotPassword', component: ForgotPassword },
   { path: '/404', name: 'NotFound', component: NotFound },
   { path: '/:pathMatch(.*)*', redirect: '/404' },
 ]
