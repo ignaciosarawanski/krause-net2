@@ -8,14 +8,8 @@
 
     <!-- Navigation -->
     <nav class="flex-1 p-4 space-y-2">
-      <SidebarItem label="Loan a Computer" icon="💻" to="/dashboard/loan" />
-      <SidebarItem label="Manage Loans" icon="📋" to="/dashboard/manage-loans" />
-      <SidebarItem
-        v-if="store.role === 'admin'"
-        label="Manage Profiles"
-        icon="👤"
-        to="/dashboard/manage-profiles"
-      />
+      <SidebarItem label="Pedir Computadora" icon="💻" to="/dashboard/loan" />
+      <SidebarItem label="Cancelar Prestamo" icon="📋" to="/dashboard/manage-loans" />
     </nav>
 
     <!-- Logout -->

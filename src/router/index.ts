@@ -6,7 +6,6 @@ import Dashboard from '@/views/Dashboard.vue'
 import NotFound from '@/views/NotFound.vue'
 import LoanComputer from '@/views/LoanComputers.vue'
 import ManageLoans from '@/views/ManageLoans.vue'
-import ManageProfiles from '@/views/ManageUsers.vue'
 import { useUserStore } from '@/stores/user'
 
 const routes = [
@@ -20,13 +19,17 @@ const routes = [
     component: Dashboard,
     redirect: '/dashboard/loan',
     children: [
-      { path: 'loan', name: 'LoanComputer', component: LoanComputer },
-      { path: 'manage-loans', name: 'ManageLoans', component: ManageLoans },
       {
-        path: 'manage-profiles',
-        name: 'ManageProfiles',
-        component: ManageProfiles,
-        meta: { requiresAdmin: true }, // 🔒 solo admin
+        path: 'loan',
+        name: 'LoanComputer',
+        component: LoanComputer,
+        meta: { requiresStatus: true },
+      },
+      {
+        path: 'manage-loans',
+        name: 'ManageLoans',
+        component: ManageLoans,
+        meta: { requiresStatus: true },
       },
     ],
   },
@@ -64,13 +67,13 @@ router.beforeEach(async (to, from, next) => {
   }
 
   // 🧑‍💼 Protección de rutas con meta.requiresAdmin
-  if (to.meta.requiresAdmin) {
+  if (to.meta.requiresStatus) {
     // Si aún no se cargó el rol, intentar fetchUser nuevamente
-    if (!userStore.role) {
+    if (!userStore.status) {
       await userStore.fetchUser()
     }
 
-    if (userStore.role !== 'admin') {
+    if (userStore.status !== 'pending') {
       // No tiene permisos
       return next({ path: '/dashboard' })
     }

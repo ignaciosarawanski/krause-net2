@@ -6,28 +6,28 @@ import type { User } from '@supabase/supabase-js'
 export const useUserStore = defineStore('user', () => {
   // 🔐 AUTH STATE
   const user = ref<User | null>(null)
-  const role = ref<string | null>(null)
+  const status = ref<string | null>(null)
 
-  // 🔄 Fetch user + role
+  // 🔄 Fetch user + status
   const fetchUser = async () => {
     const { data } = await supabase.auth.getUser()
     user.value = data.user
 
     if (user.value) {
-      // Buscamos el rol en la tabla users (columna role)
+      // Buscamos el rol en la tabla users (columna status)
       const { data: profile, error } = await supabase
-        .from('users')
-        .select('role')
+        .from('profiles')
+        .select('status')
         .eq('id', user.value.id)
         .single()
 
       if (!error && profile) {
-        role.value = profile.role
+        status.value = profile.status
       } else {
-        role.value = null
+        status.value = null
       }
     } else {
-      role.value = null
+      status.value = null
     }
   }
 
@@ -37,7 +37,7 @@ export const useUserStore = defineStore('user', () => {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       user.value = session?.user || null
-      if (!session) role.value = null
+      if (!session) status.value = null
     })
     return subscription
   }
@@ -46,7 +46,7 @@ export const useUserStore = defineStore('user', () => {
   const logout = async () => {
     await supabase.auth.signOut()
     user.value = null
-    role.value = null
+    status.value = null
   }
 
   // 💻 DASHBOARD VIEW STATE (opcional si usás router)
@@ -57,7 +57,7 @@ export const useUserStore = defineStore('user', () => {
 
   return {
     user,
-    role,
+    status,
     fetchUser,
     listenAuthChanges,
     logout,
