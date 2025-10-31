@@ -22,7 +22,12 @@ const routes = [
     children: [
       { path: 'loan', name: 'LoanComputer', component: LoanComputer },
       { path: 'manage-loans', name: 'ManageLoans', component: ManageLoans },
-      { path: 'manage-profiles', name: 'ManageProfiles', component: ManageProfiles },
+      {
+        path: 'manage-profiles',
+        name: 'ManageProfiles',
+        component: ManageProfiles,
+        meta: { requiresAdmin: true }, // 🔒 solo admin
+      },
     ],
   },
 
@@ -35,27 +40,40 @@ const router = createRouter({
   routes,
 })
 
-// 🧭 Global guard
+// 🧭 Global navigation guard
 router.beforeEach(async (to, from, next) => {
   const userStore = useUserStore()
 
-  // Keep user state updated
+  // 🔄 Asegurar que el usuario y el rol estén cargados
   if (!userStore.user) {
     await userStore.fetchUser()
   }
 
-  const publicPages = ['Login', 'SignUp', 'ForgotPassword']
+  const publicPages = ['Home', 'Login', 'SignUp', 'ForgotPassword']
   const isPublic = publicPages.includes(to.name as string)
   const isLoggedIn = !!userStore.user
 
-  // Redirect logged-in users away from public pages
+  // 🚫 Usuario logueado intentando ir a Login o SignUp
   if (isLoggedIn && isPublic) {
     return next({ path: '/dashboard' })
   }
 
-  // Protect dashboard routes
+  // 🔐 Bloquear acceso a dashboard si no está logueado
   if (!isLoggedIn && to.path.startsWith('/dashboard')) {
     return next({ path: '/login' })
+  }
+
+  // 🧑‍💼 Protección de rutas con meta.requiresAdmin
+  if (to.meta.requiresAdmin) {
+    // Si aún no se cargó el rol, intentar fetchUser nuevamente
+    if (!userStore.role) {
+      await userStore.fetchUser()
+    }
+
+    if (userStore.role !== 'admin') {
+      // No tiene permisos
+      return next({ path: '/dashboard' })
+    }
   }
 
   next()

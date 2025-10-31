@@ -1,22 +1,25 @@
+<!-- src/components/SidebarItem.vue -->
 <template>
-  <button
-    @click="$emit('click')"
+  <RouterLink
+    :to="to"
     class="flex items-center w-full px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition"
-    :class="{ 'bg-blue-100 text-blue-600 font-medium': active }"
+    :class="{ 'bg-blue-100 text-blue-600 font-medium': isActive }"
   >
     <span class="text-lg mr-3">{{ icon }}</span>
     <span>{{ label }}</span>
-  </button>
+  </RouterLink>
 </template>
 
 <script setup lang="ts">
-defineProps<{
+import { computed } from 'vue'
+import { useRoute, RouterLink } from 'vue-router'
+
+const props = defineProps<{
   label: string
   icon?: string
-  active?: boolean
+  to: string
 }>()
 
-defineEmits<{
-  (e: 'click'): void
-}>()
+const route = useRoute()
+const isActive = computed(() => route.path === props.to)
 </script>

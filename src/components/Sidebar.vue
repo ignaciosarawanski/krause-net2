@@ -2,27 +2,28 @@
 <template>
   <aside class="w-64 bg-white shadow-md h-screen flex flex-col">
     <!-- Logo -->
-    <div class="p-6 border-b flex justify-center">
-      <Logo :size="48" />
+    <div class="p-6 flex justify-center">
+      <Logo :size="64" />
     </div>
 
     <!-- Navigation -->
     <nav class="flex-1 p-4 space-y-2">
-      <RouterLink
-        v-for="item in menu"
-        :key="item.to"
-        :to="item.to"
-        class="flex items-center px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition"
-        :class="{ 'bg-blue-100 text-blue-600 font-medium': route.path === item.to }"
-      >
-        <span class="text-lg mr-3">{{ item.icon }}</span>
-        <span>{{ item.label }}</span>
-      </RouterLink>
+      <SidebarItem label="Loan a Computer" icon="💻" to="/dashboard/loan" />
+      <SidebarItem label="Manage Loans" icon="📋" to="/dashboard/manage-loans" />
+      <SidebarItem
+        v-if="store.role === 'admin'"
+        label="Manage Profiles"
+        icon="👤"
+        to="/dashboard/manage-profiles"
+      />
     </nav>
 
     <!-- Logout -->
-    <div class="border-t p-4">
-      <button @click="store.logout" class="w-full py-2 text-red-600 hover:text-red-700 font-medium">
+    <div class="text-center p-5">
+      <button
+        @click="store.logout"
+        class="px-2 py-2 text-white text-lg rounded-lg bg-red-500 transition hover:bg-red-800 hover:cursor-pointer"
+      >
         Logout
       </button>
     </div>
@@ -30,16 +31,10 @@
 </template>
 
 <script setup lang="ts">
-import { useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import SidebarItem from './SidebarItem.vue'
+
 import Logo from './Logo.vue'
 
 const store = useUserStore()
-const route = useRoute()
-
-const menu = [
-  { label: 'Loan a Computer', icon: '💻', to: '/dashboard/loan' },
-  { label: 'Manage Loans', icon: '📋', to: '/dashboard/manage-loans' },
-  { label: 'Manage Profiles', icon: '👤', to: '/dashboard/manage-profiles' },
-]
 </script>
