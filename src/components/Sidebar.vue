@@ -1,6 +1,6 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
-  <aside class="w-64 bg-white shadow-md h-screen flex flex-col">
+  <aside class="fixed top-0 left-0 w-64 h-screen bg-white shadow-md flex flex-col z-50">
     <!-- Logo -->
     <div class="p-6 flex justify-center">
       <Logo :size="64" />

@@ -1,27 +1,40 @@
 <template>
-  <div class="bg-white p-30 rounded-2xl shadow-md max-w-lg mx-auto text-center">
-    <h2 class="text-2xl font-semibold mb-4">Solicitar computadora</h2>
+  <div class="space-y-4">
+    <LaptopDisplay
+      v-for="laptop in laptops"
+      :key="laptop.id"
+      :name="laptop.name"
+      :available="laptop.available"
+      @request="requestLoan"
+    />
 
-    <button
-      @click="requestLoan"
-      :disabled="loading"
-      class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
-    >
-      {{ loading ? 'Procesando...' : 'Solicitar' }}
-    </button>
-
-    <p v-if="message" class="mt-4 text-gray-700">{{ message }}</p>
+    <p v-if="message" class="mt-4 text-center text-sm text-gray-600">{{ message }}</p>
   </div>
 </template>
 
-<script lang="ts" setup>
-import { ref } from 'vue'
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import { supabase } from '@/lib/supabase'
+import LaptopDisplay from '@/components/LaptopDisplay.vue'
 
+interface Laptop {
+  id: string
+  name: string
+  available: boolean
+}
+
+const laptops = ref<Laptop[]>([])
 const message = ref<string | null>(null)
 const loading = ref(false)
 
-async function requestLoan() {
+// 📦 Cargar todas las computadoras al montar
+onMounted(async () => {
+  const { data } = await supabase.from('computers').select('*').order('name', { ascending: true })
+  if (data) laptops.value = data
+})
+
+// 🖱️ Manejar solicitud desde un LaptopDisplay
+async function requestLoan(name: string) {
   loading.value = true
   message.value = null
 
@@ -34,7 +47,6 @@ async function requestLoan() {
     return
   }
 
-  // Buscar perfil
   const { data: profile } = await supabase
     .from('profiles')
     .select('id')
@@ -47,37 +59,31 @@ async function requestLoan() {
     return
   }
 
-  // Verificar si ya tiene préstamo
   const { data: activeLoan } = await supabase
     .from('loans')
-    .select('*')
+    .select('*, computers(name)')
     .eq('user_id', profile.id)
     .maybeSingle()
 
   if (activeLoan) {
+    alert(`Ya tenés una computadora asignada: ${activeLoan.computers?.name || 'desconocida'}`)
     message.value = 'Ya tenés una computadora asignada.'
     loading.value = false
     return
   }
 
-  // Buscar una disponible
-  const { data: available } = await supabase
-    .from('computers')
-    .select('*')
-    .eq('available', true)
-    .limit(1)
-    .maybeSingle()
-
-  if (!available) {
-    message.value = 'No hay computadoras disponibles.'
+  // Buscar la laptop seleccionada
+  const laptop = laptops.value.find((l) => l.name === name)
+  if (!laptop || !laptop.available) {
+    message.value = 'Esa computadora no está disponible.'
     loading.value = false
     return
   }
 
-  // Crear préstamo y marcar como no disponible
+  // Crear préstamo
   const { error: loanError } = await supabase
     .from('loans')
-    .insert([{ user_id: profile.id, computer_id: available.id }])
+    .insert([{ user_id: profile.id, computer_id: laptop.id }])
 
   if (loanError) {
     message.value = 'Error al registrar el préstamo.'
@@ -85,9 +91,10 @@ async function requestLoan() {
     return
   }
 
-  await supabase.from('computers').update({ available: false }).eq('id', available.id)
+  await supabase.from('computers').update({ available: false }).eq('id', laptop.id)
+  laptop.available = false // actualiza el estado local
 
-  message.value = `Se te asignó la computadora: ${available.name}`
+  message.value = `Se te asignó la computadora: ${laptop.name}`
   loading.value = false
 }
 </script>

@@ -1,27 +1,42 @@
 <template>
-  <div class="bg-white p-30 rounded-2xl shadow-md max-w-lg mx-auto text-center">
-    <h2 class="text-2xl font-semibold mb-4">Cancelar préstamo</h2>
+  <div class="space-y-4">
+    <!-- 🖥️ Tarjetas de préstamos activos -->
+    <ReturnLaptopCard
+      v-for="loan in activeLoans"
+      :key="loan.id"
+      :name="loan.computers?.name || 'Desconocida'"
+      :active="true"
+      @return="cancelLoan"
+    />
 
-    <button
-      @click="cancelLoan"
-      :disabled="loading"
-      class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 disabled:opacity-50"
-    >
-      {{ loading ? 'Procesando...' : 'Cancelar préstamo' }}
-    </button>
-
-    <p v-if="message" class="mt-4 text-gray-700">{{ message }}</p>
+    <p v-if="message" class="mt-4 text-center text-sm text-gray-600">{{ message }}</p>
   </div>
 </template>
 
-<script lang="ts" setup>
-import { ref } from 'vue'
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import { supabase } from '@/lib/supabase'
+import ReturnLaptopCard from '@/components/ReturnLaptopDisplay.vue'
 
+interface Loan {
+  id: number
+  computers: {
+    id: number
+    name: string
+  }[]
+}
+
+const activeLoans = ref<Loan[]>([])
 const message = ref<string | null>(null)
 const loading = ref(false)
 
-async function cancelLoan() {
+// 📦 Cargar préstamos activos del usuario
+onMounted(async () => {
+  await fetchLoans()
+})
+
+// 🔄 Obtener préstamos activos del usuario
+async function fetchLoans() {
   loading.value = true
   message.value = null
 
@@ -34,26 +49,71 @@ async function cancelLoan() {
     return
   }
 
-  // Buscar préstamo activo
-  const { data: loan } = await supabase
-    .from('loans')
-    .select('*')
-    .eq('user_id', user.id)
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('id', user.id)
     .maybeSingle()
 
-  if (!loan) {
-    message.value = 'No tenés préstamos activos.'
+  if (!profile) {
+    message.value = 'No se encontró tu perfil.'
     loading.value = false
     return
   }
 
-  // Liberar computadora
-  await supabase.from('computers').update({ available: true }).eq('id', loan.computer_id)
+  const { data, error } = await supabase
+    .from('loans')
+    .select('id, computers:computer_id(id, name)')
+    .eq('user_id', profile.id)
 
-  // Borrar préstamo
-  await supabase.from('loans').delete().eq('id', loan.id)
+  if (error) {
+    console.error(error)
+    message.value = 'Error al cargar tus préstamos.'
+  } else if (!data?.length) {
+    message.value = 'No tenés préstamos activos.'
+  } else {
+    activeLoans.value = data
+  }
 
-  message.value = 'Préstamo cancelado correctamente.'
+  loading.value = false
+}
+
+// 💾 Cancelar préstamo (devolver computadora)
+async function cancelLoan(name: string) {
+  const confirmReturn = confirm(`¿Seguro que querés devolver la computadora ${name}?`)
+  if (!confirmReturn) return
+
+  loading.value = true
+  message.value = null
+
+  const { data: computer } = await supabase
+    .from('computers')
+    .select('id')
+    .eq('name', name)
+    .maybeSingle()
+
+  if (!computer) {
+    message.value = 'No se encontró la computadora.'
+    loading.value = false
+    return
+  }
+
+  const { error: deleteError } = await supabase
+    .from('loans')
+    .delete()
+    .eq('computer_id', computer.id)
+
+  if (deleteError) {
+    console.error(deleteError)
+    message.value = 'Error al devolver la computadora.'
+    loading.value = false
+    return
+  }
+
+  await supabase.from('computers').update({ available: true }).eq('id', computer.id)
+
+  message.value = `Has devuelto la computadora ${name}.`
+  await fetchLoans() // refresca lista
   loading.value = false
 }
 </script>
